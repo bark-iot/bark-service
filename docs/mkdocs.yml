@@ -1,0 +1,4 @@
+site_name: Barks Service
+theme: readthedocs
+site_dir: ../public/barks/docs
+repo_url: https://github.com/bark-iot/bark-service/

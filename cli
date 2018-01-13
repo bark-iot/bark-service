@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+require 'thor'
+
+def configure(*envs)
+  yield self if envs.empty? || envs.include?(ENV['RACK_ENV'].to_sym)
+end
+
+require './config/logging.rb'
+require './config/database.rb'
+require './config/concepts.rb'
+
+class MyCLI < Thor
+  desc 'db_migrate [VERSION]', 'Migrate to VERSION or latest'
+  def db_migrate(version = nil)
+    Sequel.extension :migration
+    DB.logger = Logger.new($stdout)
+    if version
+      puts "Migrating to version #{version}"
+      Sequel::Migrator.run(DB, File.join(File.dirname(__FILE__), 'migrations'), target: version.to_i, allow_missing_migration_files: true)
+    else
+      puts 'Migrating to latest'
+      Sequel::Migrator.run(DB, File.join(File.dirname(__FILE__), 'migrations'), allow_missing_migration_files: true)
+    end
+  end
+end
+
+MyCLI.start(ARGV)
