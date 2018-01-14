@@ -28,7 +28,7 @@ namespace '/houses/:house_id' do
   end
 
   post '/barks' do
-    result = Bark::Create.(params)
+    result = Bark::Create.(params.merge(authorization_header: request.env['HTTP_AUTHORIZATION'].to_s))
     if result.success?
       body Bark::Representer.new(result['model']).to_json
     else

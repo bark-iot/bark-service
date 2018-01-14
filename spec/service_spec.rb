@@ -18,6 +18,18 @@ describe 'Barks Service' do
     stub_request(:get, 'http://lb/houses/3').
         with(headers: {'Authorization'=>'Bearer wrong_token'}).
         to_return(status: 404, body: '', headers: {})
+    stub_request(:get, 'http://lb/houses/1/triggers/1/validate').
+        with(headers: {'Authorization'=>"Bearer #{token}"}).
+        to_return(status: 200, body: '{}', headers: {}) # actually returns trigger json
+    stub_request(:get, 'http://lb/houses/1/actions/1/validate').
+        with(headers: {'Authorization'=>"Bearer #{token}"}).
+        to_return(status: 200, body: '{}', headers: {}) # actually returns action json
+    stub_request(:get, 'http://lb/houses/1/triggers/2/validate').
+        with(headers: {'Authorization'=>"Bearer #{token}"}).
+        to_return(status: 404, body: '', headers: {})
+    stub_request(:get, 'http://lb/houses/1/actions/2/validate').
+        with(headers: {'Authorization'=>"Bearer #{token}"}).
+        to_return(status: 404, body: '', headers: {})
   end
 
   #TODO: add delete house test
@@ -78,6 +90,13 @@ describe 'Barks Service' do
     expect(body['action_id']).to eql(1)
     expect(body['mappings']).to eql('{"input": "output"}')
     expect(body['settings']).to eql('{"param": "value"}')
+  end
+
+  it 'should not create bark with invalid trigger and action' do
+    header 'Authorization', "Bearer #{token}"
+    post '/houses/1/barks', {title: 'MyBark', trigger_id: 2, action_id: 2, mappings: '{"input": "output"}', settings: '{"param": "value"}'}
+
+    expect(last_response.status).to equal(422)
   end
 
   it 'should not create bark without required params' do
@@ -160,6 +179,6 @@ describe 'Barks Service' do
   end
 
   def bark
-    Bark::Create.(title: 'MyBark', house_id: 1, trigger_id: 1, action_id: 1, mappings: '{"input": "output"}', settings: '{"param": "value"}')['model']
+    Bark::Create.(title: 'MyBark', house_id: 1, trigger_id: 1, action_id: 1, mappings: '{"input": "output"}', settings: '{"param": "value"}', authorization_header: "Bearer #{token}")['model']
   end
 end

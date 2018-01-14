@@ -14,8 +14,6 @@ class Bark < Sequel::Model(DB)
 
     contract do
       property :house_id
-      property :trigger_id
-      property :action_id
       property :mappings
       property :settings
       property :title

@@ -8,6 +8,8 @@ class Bark < Sequel::Model(DB)
     step Contract::Build()
     step Contract::Validate()
     step :set_timestamps
+    step :validate_trigger
+    step :validate_action
     step Contract::Persist()
     step :notify
     step :log_success
@@ -20,12 +22,14 @@ class Bark < Sequel::Model(DB)
       property :title
       property :mappings
       property :settings
+      property :authorization_header, virtual: true
 
       validation do
         required(:house_id).filled
         required(:trigger_id).filled
         required(:action_id).filled
         required(:title).filled
+        required(:authorization_header).filled
       end
     end
 
@@ -33,6 +37,16 @@ class Bark < Sequel::Model(DB)
       timestamp = Time.now
       model.created_at = timestamp
       model.updated_at = timestamp
+    end
+
+    def validate_trigger(params:, **)
+      result = Trigger::ValidateHouseId.(id: params[:trigger_id], house_id: params[:house_id], authorization_header: params[:authorization_header])
+      result.success?
+    end
+
+    def validate_action(params:, **)
+      result = Action::ValidateHouseId.(id: params[:trigger_id], house_id: params[:house_id], authorization_header: params[:authorization_header])
+      result.success?
     end
 
     def notify(options, params:, model:, **)
