@@ -13,13 +13,15 @@ LOGGER.info "Started listening events on #{ENV['REDIS_URL']}"
 
 #TODO: listen to triggers and actions delete actions
 begin
-  REDIS.subscribe('houses') do |on|
+  REDIS.subscribe('houses', 'triggers', 'actions') do |on|
     on.message do |channel, msg|
       puts "##{channel} - #{msg}"
       data = JSON.parse(msg)
       case data['type']
         when 'deleted'
-          House::Delete.(house_id: data['house']['id'])
+          House::Delete.(house_id: data['house']['id'])       if channel == 'houses'
+          Trigger::Delete.(trigger_id: data['trigger']['id']) if channel == 'triggers'
+          Action::Delete.(action_id: data['action']['id'])    if channel == 'actions'
         else
           LOGGER.warn "Unsupported type #{data['type']}"
       end
