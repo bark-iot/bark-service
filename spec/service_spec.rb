@@ -32,7 +32,7 @@ describe 'Barks Service' do
         to_return(status: 404, body: '', headers: {})
   end
 
-  #TODO: add delete house test
+  #TODO: add delete house/trigger/action test
 
   it 'should show bark for house' do
     header 'Authorization', "Bearer #{token}"
