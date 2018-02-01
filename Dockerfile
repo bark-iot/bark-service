@@ -1,8 +1,7 @@
-FROM ruby:2.4.2
+FROM ruby:2.5.0-alpine
 
 # Pg
-RUN apt-get update -qq && apt-get install \
-    -y build-essential libpq-dev lsb-release
+RUN apk --update --upgrade add postgresql-dev git build-base
 
 ENV APP_ROOT /app
 RUN mkdir $APP_ROOT
